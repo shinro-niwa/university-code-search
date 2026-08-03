@@ -1,0 +1,39 @@
+name: Excel to JSON
+
+on:
+  push:
+    paths:
+      - 'コード検索.xlsx'
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install packages
+        run: |
+          pip install pandas openpyxl
+
+      - name: Convert Excel
+        run: |
+          python excel_to_json.py
+
+      - name: Commit data.json
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add data.json
+
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Auto update data.json"
+            git push
+          fi
